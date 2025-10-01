@@ -39,6 +39,9 @@ export default function SoundMixer() {
     }, {} as Record<SoundId, Tone.Player>);
     playersRef.current = playerInstances;
 
+    // Preload all sounds
+    Tone.loaded();
+
     return () => {
       Object.values(playersRef.current).forEach(player => player.dispose());
       if (Tone.Transport.state === "started") {
@@ -56,7 +59,7 @@ export default function SoundMixer() {
     if (player) {
       if (value > 0) {
         player.volume.value = Tone.gainToDb(value / 100);
-        if (isPlaying && player.state !== "started") {
+        if (isPlaying && player.state !== "started" && player.loaded) {
           player.sync().start(0);
         }
       } else {
@@ -79,7 +82,7 @@ export default function SoundMixer() {
       Object.entries(volumes).forEach(([id, vol]) => {
         if (vol > 0) {
           const player = playersRef.current[id as SoundId];
-          if (player.state !== "started") {
+          if (player.state !== "started" && player.loaded) {
             player.sync().start(0);
           }
         }
@@ -89,7 +92,7 @@ export default function SoundMixer() {
     }
   };
 
-  const handleSuggestions = (suggestedIds: SoundId[]) => {
+  const handleSuggestions = async (suggestedIds: SoundId[]) => {
     const newVolumes: Volumes = { ...initialVolumes };
     suggestedIds.forEach(id => {
       if (sounds.some(s => s.id === id)) {
@@ -97,13 +100,15 @@ export default function SoundMixer() {
       }
     });
     setVolumes(newVolumes);
+    
+    await Tone.loaded();
 
     Object.entries(newVolumes).forEach(([id, vol]) => {
         const player = playersRef.current[id as SoundId];
         if (player) {
             if (vol > 0) {
                 player.volume.value = Tone.gainToDb(vol / 100);
-                if (isPlaying && player.state !== "started") {
+                if (isPlaying && player.state !== "started" && player.loaded) {
                     player.sync().start(0);
                 }
             } else {
