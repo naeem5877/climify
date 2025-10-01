@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react-dom";
 import { Wand2 } from "lucide-react";
 
 import { getSoundSuggestion } from "@/app/actions";
@@ -34,7 +34,7 @@ function SubmitButton() {
 }
 
 export default function AiSuggester({ onSuggestions }: AiSuggesterProps) {
-  const [state, formAction] = useFormState(getSoundSuggestion, initialState);
+  const [state, formAction] = useActionState(getSoundSuggestion, initialState);
   const { toast } = useToast();
   const formRef = React.useRef<HTMLFormElement>(null);
 

@@ -26,21 +26,26 @@ export default function SoundMixer() {
   const playersRef = React.useRef<Record<SoundId, Tone.Player>>({} as Record<SoundId, Tone.Player>);
 
   React.useEffect(() => {
-    setIsMounted(true);
-    const playerInstances = sounds.reduce((acc, sound) => {
-      acc[sound.id] = new Tone.Player({
-        url: sound.audioSrc,
-        loop: true,
-        volume: -Infinity,
-        fadeOut: 0.5,
-        fadeIn: 0.5,
-      }).toDestination();
-      return acc;
-    }, {} as Record<SoundId, Tone.Player>);
-    playersRef.current = playerInstances;
+    const setupPlayers = async () => {
+      const playerInstances = await Promise.all(
+        sounds.map(sound => new Promise<[SoundId, Tone.Player]>((resolve, reject) => {
+          const player = new Tone.Player({
+            url: sound.audioSrc,
+            loop: true,
+            volume: -Infinity,
+            fadeOut: 0.5,
+            fadeIn: 0.5,
+            onload: () => resolve([sound.id, player]),
+            onerror: (err) => reject(new Error(`Failed to load ${sound.audioSrc}: ${err}`)),
+          }).toDestination();
+        }))
+      );
+      
+      playersRef.current = Object.fromEntries(playerInstances) as Record<SoundId, Tone.Player>;
+      setIsMounted(true);
+    };
 
-    // Preload all sounds
-    Tone.loaded();
+    setupPlayers().catch(console.error);
 
     return () => {
       Object.values(playersRef.current).forEach(player => player.dispose());
@@ -56,10 +61,10 @@ export default function SoundMixer() {
     setVolumes(newVolumes);
 
     const player = playersRef.current[id];
-    if (player) {
+    if (player && player.loaded) {
       if (value > 0) {
         player.volume.value = Tone.gainToDb(value / 100);
-        if (isPlaying && player.state !== "started" && player.loaded) {
+        if (isPlaying && player.state !== "started") {
           player.sync().start(0);
         }
       } else {
@@ -82,7 +87,7 @@ export default function SoundMixer() {
       Object.entries(volumes).forEach(([id, vol]) => {
         if (vol > 0) {
           const player = playersRef.current[id as SoundId];
-          if (player.state !== "started" && player.loaded) {
+          if (player && player.loaded && player.state !== "started") {
             player.sync().start(0);
           }
         }
@@ -105,10 +110,10 @@ export default function SoundMixer() {
 
     Object.entries(newVolumes).forEach(([id, vol]) => {
         const player = playersRef.current[id as SoundId];
-        if (player) {
+        if (player && player.loaded) {
             if (vol > 0) {
                 player.volume.value = Tone.gainToDb(vol / 100);
-                if (isPlaying && player.state !== "started" && player.loaded) {
+                if (isPlaying && player.state !== "started") {
                     player.sync().start(0);
                 }
             } else {
