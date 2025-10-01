@@ -21,26 +21,29 @@ export default function SoundControl({
   isSuggested,
 }: SoundControlProps) {
   const { Icon, name } = sound;
+  const isActive = isSoundPlaying && volume > 0;
 
   return (
     <Card
       className={cn(
-        "flex flex-col items-center justify-start text-center p-4 gap-4 transition-all duration-300 transform hover:scale-105 hover:bg-secondary/20",
-        isSoundPlaying ? "bg-secondary/10" : "bg-transparent",
-        isSuggested && "animate-border-pulse"
+        "flex flex-col items-center justify-start text-center p-4 gap-4 transition-all duration-300 transform",
+        "bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl",
+        "hover:bg-white/10 hover:border-white/20 hover:-translate-y-1",
+        isActive && "bg-purple-600/10 border-purple-400/30",
+        isSuggested && "animate-border-pulse border-primary/80"
       )}
     >
       <CardHeader className="p-0 items-center gap-2">
         <div className="relative">
           <Icon
             className={cn(
-              "h-12 w-12 text-foreground/80 transition-all duration-500",
-              isSoundPlaying && "text-primary animate-pulse-glow"
+              "h-10 w-10 text-gray-300 transition-all duration-500",
+              isActive && "text-primary-foreground animate-pulse-glow"
             )}
             strokeWidth={1.5}
           />
         </div>
-        <CardTitle className="text-base font-medium font-headline tracking-wide">{name}</CardTitle>
+        <CardTitle className="text-sm font-medium font-headline tracking-wide text-gray-200">{name}</CardTitle>
       </CardHeader>
       <CardContent className="w-full p-0">
         <Slider

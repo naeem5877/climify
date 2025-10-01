@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 @layer base {
@@ -43,39 +43,40 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 13.3%; /* #222222 */
-    --foreground: 240 67% 94%; /* #E6E6FA */
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    
+    --primary: 263.4 70% 50.4%; /* Vibrant Purple */
+    --primary-foreground: 210 20% 98%;
 
-    --card: 0 0% 10%; /* #1A1A1A */
-    --card-foreground: 240 67% 94%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 240 67% 94%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 216 12.2% 83.9%;
 
-    --primary: 51 100% 50%; /* #FFD700 Gold */
-    --primary-foreground: 0 0% 13.3%;
-
-    --secondary: 275 100% 25.5%; /* #4B0082 Deep Indigo */
-    --secondary-foreground: 240 67% 94%;
-
-    --muted: 180 100% 15%; /* Darker Teal */
-    --muted-foreground: 240 67% 80%;
-
-    --accent: 180 100% 25.1%; /* #008080 Dark Teal */
-    --accent-foreground: 240 67% 94%;
-
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 20% 98%;
 
-    --border: 180 100% 20%; /* Teal-based border */
-    --input: 180 100% 20%;
-    --ring: 240 67% 94%; /* Lavender for focus rings */
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 263.4 70% 50.4%; /* Vibrant Purple for focus rings */
     
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

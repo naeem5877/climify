@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Wand2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 import { getSoundSuggestion } from "@/app/actions";
 import type { SoundId } from "@/lib/sounds";
@@ -25,9 +25,9 @@ const initialState = {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
       {pending ? "Analyzing..." : <>
-        <Wand2 className="mr-2 h-4 w-4" /> Suggest Soundscape
+        <Sparkles className="mr-2 h-4 w-4" /> Generate
       </>}
     </Button>
   );
@@ -49,35 +49,38 @@ export default function AiSuggester({ onSuggestions }: AiSuggesterProps) {
     if (state.suggestions && state.suggestions.length > 0) {
       onSuggestions(state.suggestions as SoundId[]);
       toast({
-        title: "Soundscape Suggested!",
+        title: "Soundscape Generated!",
         description: "We've adjusted the sliders based on your environment.",
       });
       formRef.current?.reset();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]); // Only run when state changes
+  }, [state]);
 
   return (
-    <Card className="w-full max-w-xl self-center bg-card/50 backdrop-blur-sm border-2">
+    <Card className="w-full bg-black/30 backdrop-blur-lg border-white/10 shadow-2xl shadow-purple-900/20">
       <form action={formAction} ref={formRef}>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">AI Soundscape Assistant</CardTitle>
+          <CardTitle className="font-headline text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400">
+            AI Soundscape Assistant
+          </CardTitle>
           <CardDescription>
-            Describe your current environment or mood, and let AI suggest the perfect background sounds for you.
+            Describe your current environment or mood for a personalized soundscape.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
-            <Label htmlFor="environmentDescription">Your Environment</Label>
+        <CardContent className="space-y-4">
+            <Label htmlFor="environmentDescription" className="sr-only">Your Environment</Label>
             <Textarea
                 id="environmentDescription"
                 name="environmentDescription"
-                placeholder="e.g., 'Working in a busy coffee shop, need to focus.' or 'Trying to fall asleep after a stressful day.'"
+                placeholder="e.g., 'A quiet library, need to focus.' or 'A rainy evening, feeling cozy.'"
                 rows={3}
                 required
+                className="bg-transparent/20 border-white/20 focus:ring-primary/80"
             />
             {state.error && <p className="text-sm text-destructive">{state.error}</p>}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="justify-end">
           <SubmitButton />
         </CardFooter>
       </form>

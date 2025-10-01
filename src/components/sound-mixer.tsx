@@ -1,15 +1,17 @@
 "use client";
 
-import * as React from "react";
-import * as Tone from "tone";
-import { Pause, Play, Volume2 } from "lucide-react";
+import * as React from 'react';
+import * as Tone from 'tone';
+import {Pause, Play} from 'lucide-react';
+import {useFormState} from 'react-dom';
 
-import { sounds, type Sound, type SoundId } from "@/lib/sounds";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import SoundControl from "@/components/sound-control";
-import AiSuggester from "@/components/ai-suggester";
+import {getSoundSuggestion} from '@/app/actions';
+import AiSuggester from '@/components/ai-suggester';
+import SoundControl from '@/components/sound-control';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
+import {Skeleton} from '@/components/ui/skeleton';
+import {soundIds, sounds, type SoundId} from '@/lib/sounds';
 
 type Volumes = Record<SoundId, number>;
 
@@ -22,26 +24,37 @@ export default function SoundMixer() {
   const [isMounted, setIsMounted] = React.useState(false);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [volumes, setVolumes] = React.useState<Volumes>(initialVolumes);
-  const [activeSuggestions, setActiveSuggestions] = React.useState<SoundId[]>([]);
-  const playersRef = React.useRef<Record<SoundId, Tone.Player>>({} as Record<SoundId, Tone.Player>);
+  const [activeSuggestions, setActiveSuggestions] = React.useState<SoundId[]>(
+    []
+  );
+  const playersRef = React.useRef<Record<SoundId, Tone.Player>>(
+    {} as Record<SoundId, Tone.Player>
+  );
 
   React.useEffect(() => {
     const setupPlayers = async () => {
       const playerInstances = await Promise.all(
-        sounds.map(sound => new Promise<[SoundId, Tone.Player]>((resolve, reject) => {
-          const player = new Tone.Player({
-            url: sound.audioSrc,
-            loop: true,
-            volume: -Infinity,
-            fadeOut: 0.5,
-            fadeIn: 0.5,
-            onload: () => resolve([sound.id, player]),
-            onerror: (err) => reject(new Error(`Failed to load ${sound.audioSrc}: ${err}`)),
-          }).toDestination();
-        }))
+        sounds.map(
+          sound =>
+            new Promise<[SoundId, Tone.Player]>((resolve, reject) => {
+              const player = new Tone.Player({
+                url: sound.audioSrc,
+                loop: true,
+                volume: -Infinity,
+                fadeOut: 0.5,
+                fadeIn: 0.5,
+                onload: () => resolve([sound.id, player]),
+                onerror: err =>
+                  reject(new Error(`Failed to load ${sound.audioSrc}: ${err}`)),
+              }).toDestination();
+            })
+        )
       );
-      
-      playersRef.current = Object.fromEntries(playerInstances) as Record<SoundId, Tone.Player>;
+
+      playersRef.current = Object.fromEntries(playerInstances) as Record<
+        SoundId,
+        Tone.Player
+      >;
       setIsMounted(true);
     };
 
@@ -49,7 +62,7 @@ export default function SoundMixer() {
 
     return () => {
       Object.values(playersRef.current).forEach(player => player.dispose());
-      if (Tone.Transport.state === "started") {
+      if (Tone.Transport.state === 'started') {
         Tone.Transport.stop();
         Tone.Transport.cancel();
       }
@@ -57,24 +70,25 @@ export default function SoundMixer() {
   }, []);
 
   const handleVolumeChange = (id: SoundId, value: number) => {
-    const newVolumes = { ...volumes, [id]: value };
+    const newVolumes = {...volumes, [id]: value};
     setVolumes(newVolumes);
 
     const player = playersRef.current[id];
     if (player && player.loaded) {
       if (value > 0) {
         player.volume.value = Tone.gainToDb(value / 100);
-        if (isPlaying && player.state !== "started") {
+        if (isPlaying && player.state !== 'started') {
           player.sync().start(0);
         }
       } else {
-        player.volume.value = -Infinity;
+        // Fade out and stop the player to conserve resources if volume is 0
+        player.volume.linearRampTo(-Infinity, 0.5);
       }
     }
   };
 
   const togglePlay = async () => {
-    if (Tone.context.state !== "running") {
+    if (Tone.context.state !== 'running') {
       await Tone.start();
     }
     await Tone.loaded();
@@ -87,7 +101,7 @@ export default function SoundMixer() {
       Object.entries(volumes).forEach(([id, vol]) => {
         if (vol > 0) {
           const player = playersRef.current[id as SoundId];
-          if (player && player.loaded && player.state !== "started") {
+          if (player && player.loaded && player.state !== 'started') {
             player.sync().start(0);
           }
         }
@@ -98,32 +112,34 @@ export default function SoundMixer() {
   };
 
   const handleSuggestions = async (suggestedIds: SoundId[]) => {
-    const newVolumes: Volumes = { ...initialVolumes };
+    const newVolumes: Volumes = {...initialVolumes};
+    const suggestionVolume = 60; // Set suggested sounds to a default volume
     suggestedIds.forEach(id => {
       if (sounds.some(s => s.id === id)) {
-        newVolumes[id] = 50; // Set suggested sounds to a default volume
+        newVolumes[id] = suggestionVolume;
       }
     });
-    setVolumes(newVolumes);
-    
+
     await Tone.loaded();
 
+    // First, apply all volume changes immediately for a smooth transition
+    setVolumes(newVolumes);
+
     Object.entries(newVolumes).forEach(([id, vol]) => {
-        const player = playersRef.current[id as SoundId];
-        if (player && player.loaded) {
-            if (vol > 0) {
-                player.volume.value = Tone.gainToDb(vol / 100);
-                if (isPlaying && player.state !== "started") {
-                    player.sync().start(0);
-                }
-            } else {
-                player.volume.value = -Infinity;
-            }
+      const player = playersRef.current[id as SoundId];
+      if (player && player.loaded) {
+        player.volume.linearRampTo(
+          vol > 0 ? Tone.gainToDb(vol / 100) : -Infinity,
+          0.5
+        );
+        if (vol > 0 && isPlaying && player.state !== 'started') {
+          player.sync().start(0);
         }
+      }
     });
 
     setActiveSuggestions(suggestedIds);
-    setTimeout(() => setActiveSuggestions([]), 6000); // Animation is 3*2s
+    setTimeout(() => setActiveSuggestions([]), 4000); // Animation is 2*2s
   };
 
   if (!isMounted) {
@@ -131,25 +147,25 @@ export default function SoundMixer() {
   }
 
   return (
-    <>
-      <Card className="w-full max-w-5xl bg-card/50 backdrop-blur-sm border-2">
+    <div className="flex flex-col lg:flex-row gap-8 w-full">
+      <Card className="w-full lg:w-3/5 bg-black/30 backdrop-blur-lg border-white/10 shadow-2xl shadow-purple-900/20">
         <CardHeader className="text-center">
-          <CardTitle className="font-headline text-4xl md:text-5xl tracking-wider">
-            Soundscape Mixer
+          <CardTitle className="font-headline text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400">
+            Ambient Sound Mixer
           </CardTitle>
-          <CardDescription className="text-lg">
-            Craft your perfect ambient sound environment.
+          <CardDescription className="text-base">
+            Craft your perfect audio environment for focus or relaxation.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            {sounds.map((sound) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
+            {sounds.map(sound => (
               <SoundControl
                 key={sound.id}
                 sound={sound}
                 volume={volumes[sound.id]}
-                onVolumeChange={(value) => handleVolumeChange(sound.id, value)}
-                isSoundPlaying={isPlaying && volumes[sound.id] > 0}
+                onVolumeChange={value => handleVolumeChange(sound.id, value)}
+                isSoundPlaying={isPlaying}
                 isSuggested={activeSuggestions.includes(sound.id)}
               />
             ))}
@@ -159,49 +175,50 @@ export default function SoundMixer() {
           <Button
             onClick={togglePlay}
             size="lg"
-            className="w-48 h-16 text-2xl rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow duration-300"
-            aria-label={isPlaying ? "Pause all sounds" : "Play all sounds"}
+            variant={isPlaying ? 'secondary' : 'default'}
+            className="w-48 h-16 text-2xl rounded-full shadow-lg hover:shadow-primary/40 transition-all duration-300 group"
+            aria-label={isPlaying ? 'Pause all sounds' : 'Play all sounds'}
           >
-            {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+            {isPlaying ? (
+              <Pause className="h-8 w-8 text-primary-foreground group-hover:scale-110 transition-transform" />
+            ) : (
+              <Play className="h-8 w-8 text-primary-foreground group-hover:scale-110 transition-transform" />
+            )}
           </Button>
-          <div className="flex items-center gap-2 text-muted-foreground mt-2">
-            <Volume2 className="h-4 w-4" />
-            <span className="text-xs">Adjust individual volumes above</span>
-          </div>
         </CardFooter>
       </Card>
-      <AiSuggester onSuggestions={handleSuggestions} />
-    </>
+
+      <div className="w-full lg:w-2/5 flex flex-col gap-8">
+        <AiSuggester onSuggestions={handleSuggestions} />
+      </div>
+    </div>
   );
 }
 
 const LoadingSkeleton = () => (
   <div className="w-full max-w-5xl space-y-8">
-    <Card className="w-full bg-card/50 backdrop-blur-sm border-2">
+    <Card className="w-full bg-black/30 backdrop-blur-lg border-white/10">
       <CardHeader className="text-center">
-        <Skeleton className="h-12 w-3/4 mx-auto" />
-        <Skeleton className="h-6 w-1/2 mx-auto" />
+        <Skeleton className="h-10 w-3/4 mx-auto bg-white/10" />
+        <Skeleton className="h-6 w-1/2 mx-auto bg-white/10" />
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-          {sounds.map((sound) => (
-            <Card key={sound.id} className="flex flex-col items-center justify-center p-4 gap-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <Skeleton className="h-5 w-20" />
-              <Skeleton className="h-4 w-full" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
+          {sounds.map(sound => (
+            <Card
+              key={sound.id}
+              className="flex flex-col items-center justify-center p-4 gap-4 bg-white/5 border-white/10"
+            >
+              <Skeleton className="h-10 w-10 rounded-full bg-white/10" />
+              <Skeleton className="h-5 w-20 bg-white/10" />
+              <Skeleton className="h-2 w-full bg-white/10" />
             </Card>
           ))}
         </div>
       </CardContent>
       <CardFooter className="flex-col gap-4 pt-6">
-        <Skeleton className="w-48 h-16 rounded-full" />
-        <Skeleton className="h-4 w-48" />
+        <Skeleton className="w-48 h-16 rounded-full bg-white/10" />
       </CardFooter>
-    </Card>
-    <Card className="w-full max-w-xl self-center bg-card/50 backdrop-blur-sm border-2">
-        <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
-        <CardContent><Skeleton className="h-24 w-full" /></CardContent>
-        <CardFooter><Skeleton className="h-10 w-32" /></CardFooter>
     </Card>
   </div>
 );
