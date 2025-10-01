@@ -43,25 +43,34 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 0 0% 13.3%; /* #222222 */
+    --foreground: 240 67% 94%; /* #E6E6FA */
+
+    --card: 0 0% 10%; /* #1A1A1A */
+    --card-foreground: 240 67% 94%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 240 67% 94%;
+
+    --primary: 51 100% 50%; /* #FFD700 Gold */
+    --primary-foreground: 0 0% 13.3%;
+
+    --secondary: 275 100% 25.5%; /* #4B0082 Deep Indigo */
+    --secondary-foreground: 240 67% 94%;
+
+    --muted: 180 100% 15%; /* Darker Teal */
+    --muted-foreground: 240 67% 80%;
+
+    --accent: 180 100% 25.1%; /* #008080 Dark Teal */
+    --accent-foreground: 240 67% 94%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+
+    --border: 180 100% 20%; /* Teal-based border */
+    --input: 180 100% 20%;
+    --ring: 240 67% 94%; /* Lavender for focus rings */
+    
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
