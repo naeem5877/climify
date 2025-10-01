@@ -11,11 +11,11 @@ export type Sound = {
 };
 
 export const sounds: Sound[] = [
-  { id: 'rain', name: 'Rain', Icon: CloudRain, audioSrc: 'https://storage.googleapis.com/soundscape-mixer-sounds/rain.mp3' },
-  { id: 'campfire', name: 'Campfire', Icon: Flame, audioSrc: 'https://storage.googleapis.com/soundscape-mixer-sounds/campfire.mp3' },
-  { id: 'train', name: 'Train', Icon: TrainFront, audioSrc: 'https://storage.googleapis.com/soundscape-mixer-sounds/train.mp3' },
-  { id: 'wind', name: 'Wind', Icon: Wind, audioSrc: 'https://storage.googleapis.com/soundscape-mixer-sounds/wind.mp3' },
-  { id: 'thunderstorm', name: 'Thunderstorm', Icon: CloudLightning, audioSrc: 'https://storage.googleapis.com/soundscape-mixer-sounds/thunderstorm.mp3' },
+  { id: 'rain', name: 'Rain', Icon: CloudRain, audioSrc: 'https://cdn.jsdelivr.net/gh/naeem5877/audiocdn@main/Calm_rainfall_agains.wav' },
+  { id: 'campfire', name: 'Campfire', Icon: Flame, audioSrc: 'https://cdn.jsdelivr.net/gh/naeem5877/audiocdn@main/Crackling_campfire.wav' },
+  { id: 'train', name: 'Train', Icon: TrainFront, audioSrc: 'https://cdn.jsdelivr.net/gh/naeem5877/audiocdn@main/Interior_train_ambie.wav' },
+  { id: 'wind', name: 'Wind', Icon: Wind, audioSrc: 'https://cdn.jsdelivr.net/gh/naeem5877/audiocdn@main/Strong_gusty_wind.wav' },
+  { id: 'thunderstorm', name: 'Thunderstorm', Icon: CloudLightning, audioSrc: 'https://cdn.jsdelivr.net/gh/naeem5877/audiocdn@main/thunderstorm.mp3' },
 ];
 
 export const soundIds = sounds.map(s => s.id);
