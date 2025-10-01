@@ -10,6 +10,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Literata', 'serif'],
         headline: ['Literata', 'serif'],
         code: ['monospace'],
       },
